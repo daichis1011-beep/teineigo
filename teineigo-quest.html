@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ことばマスター：だれにはなす？</title>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100dvh;
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    background-color: #f0f7ff;
+    color: #1e293b;
+    touch-action: manipulation;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: none;
+    outline: none;
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  .hidden {
+    display: none !important;
+  }
+  .app-container {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 14px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    margin-bottom: 16px;
+  }
+  .header-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0369a1;
+  }
+  .header-stats {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 8px 16px;
+    border-radius: 999px;
+  }
+  .btn-back {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 14px;
+  }
+  /* Home Set Grid */
+  .set-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 14px;
+    flex: 1;
+  }
+  .set-card {
+    background: #ffffff;
+    border: 4px solid #cbd5e1;
+    border-radius: 22px;
+    padding: 18px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: transform 0.1s;
+  }
+  .set-card.cleared {
+    background: #ecfdf5;
+    border-color: #10b981;
+  }
+  .set-card.perfect {
+    background: #fefce8;
+    border-color: #f59e0b;
+  }
+  .set-num {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .set-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #475569;
+  }
+  .set-card.cleared .set-score {
+    color: #047857;
+  }
+  .set-card.perfect .set-score {
+    color: #b45309;
+  }
+  /* Quiz Main Area */
+  .quiz-box {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+  }
+  /* Step 1: Confirm Target */
+  .step1-label {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0369a1;
+    background: #e0f2fe;
+    padding: 10px 28px;
+    border-radius: 999px;
+  }
+  .giant-avatar {
+    font-size: clamp(10rem, 26vw, 16rem);
+    line-height: 1.1;
+    margin: 10px 0;
+  }
+  .giant-name {
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 12px;
+  }
+  .btn-primary-large {
+    width: 100%;
+    max-width: 600px;
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 1.9rem;
+    font-weight: 800;
+    padding: 22px 24px;
+    border-radius: 22px;
+    box-shadow: 0 6px 0 #0369a1;
+  }
+  /* Step 2: Question & Choices */
+  .target-banner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: #f8fafc;
+    border: 3px solid #e2e8f0;
+    border-radius: 22px;
+    padding: 12px 24px;
+  }
+  .banner-avatar {
+    font-size: clamp(4.8rem, 11vw, 7rem);
+    line-height: 1;
+  }
+  .banner-text {
+    text-align: left;
+  }
+  .banner-sub {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #64748b;
+  }
+  .banner-name {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 900;
+    color: #0f172a;
+  }
+  .situation-box {
+    width: 100%;
+    background: #fef9c3;
+    border: 3px solid #fde047;
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    font-size: clamp(1.5rem, 3.3vw, 2.2rem);
+    font-weight: 800;
+    color: #1e293b;
+  }
+  .choices-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .choice-btn {
+    width: 100%;
+    background: #ffffff;
+    border: 4px solid #38bdf8;
+    border-radius: 22px;
+    padding: 22px 24px;
+    font-size: clamp(1.55rem, 3.4vw, 2.25rem);
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+    box-shadow: 0 5px 0 #7dd3fc;
+  }
+  .choice-btn.correct-choice {
+    background: #dcfce7;
+    border-color: #16a34a;
+    box-shadow: 0 5px 0 #16a34a;
+    color: #14532d;
+  }
+  .choice-btn.wrong-choice {
+    background: #fee2e2;
+    border-color: #dc2626;
+    box-shadow: 0 5px 0 #dc2626;
+    color: #7f1d1d;
+  }
+  .choice-btn.dimmed {
+    opacity: 0.45;
+  }
+  /* Feedback Panel */
+  .feedback-panel {
+    width: 100%;
+    margin-top: 16px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .feedback-panel.ok {
+    background: #dcfce7;
+    border: 3px solid #22c55e;
+  }
+  .feedback-panel.ng {
+    background: #fee2e2;
+    border: 3px solid #ef4444;
+  }
+  .feedback-mark {
+    font-size: 2rem;
+    font-weight: 900;
+  }
+  .feedback-panel.ok .feedback-mark { color: #15803d; }
+  .feedback-panel.ng .feedback-mark { color: #b91c1c; }
+  .feedback-reason {
+    font-size: clamp(1.3rem, 2.8vw, 1.75rem);
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .btn-next {
+    width: 100%;
+    max-width: 480px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 1.75rem;
+    font-weight: 800;
+    padding: 18px;
+    border-radius: 18px;
+    box-shadow: 0 5px 0 #15803d;
+  }
+  /* Result Screen */
+  .result-emoji {
+    font-size: 7rem;
+    margin: 10px 0;
+  }
+  .result-title {
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: #0369a1;
+  }
+  .result-score {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 12px 0;
+  }
+  .result-actions {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .btn-secondary-large {
+    width: 100%;
+    background: #e2e8f0;
+    color: #1e293b;
+    font-size: 1.7rem;
+    font-weight: 800;
+    padding: 20px;
+    border-radius: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- HOME VIEW -->
+  <div id="view-home">
+    <div class="header">
+      <div class="header-title">ことばマスター：だれにはなす？</div>
+      <div class="header-stats" id="total-progress">クリア 0 / 20</div>
+    </div>
+    <div class="set-grid" id="set-grid"></div>
+  </div>
+
+  <!-- QUIZ VIEW -->
+  <div id="view-quiz" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+    <div class="header">
+      <button type="button" class="btn-back" id="btn-quit">もどる</button>
+      <div class="header-title" id="quiz-set-label">セット 1</div>
+      <div class="header-stats" id="quiz-q-label">1 / 8</div>
+    </div>
+
+    <!-- STEP 1: Confirm Target -->
+    <div id="step-confirm" class="quiz-box">
+      <div class="step1-label">だれに はなす？</div>
+      <div class="giant-avatar" id="confirm-avatar">👩‍🏫</div>
+      <div class="giant-name" id="confirm-name">せんせい</div>
+      <button type="button" class="btn-primary-large" id="btn-confirm-ok">あいてを かくにんした！</button>
+    </div>
+
+    <!-- STEP 2: Answer Question -->
+    <div id="step-question" class="quiz-box hidden">
+      <div class="target-banner">
+        <div class="banner-avatar" id="q-avatar">👩‍🏫</div>
+        <div class="banner-text">
+          <div class="banner-sub">はなす あいて</div>
+          <div class="banner-name" id="q-name">せんせい</div>
+        </div>
+      </div>
+
+      <div class="situation-box" id="q-situation">［しゅくだいを だすとき］</div>
+
+      <div class="choices-container" id="choices-container">
+        <button type="button" class="choice-btn" id="choice-0"></button>
+        <button type="button" class="choice-btn" id="choice-1"></button>
+      </div>
+
+      <div id="feedback-panel" class="feedback-panel hidden">
+        <div class="feedback-mark" id="feedback-mark">⭕ せいかい！</div>
+        <div class="feedback-reason" id="feedback-reason">せんせいには「〜ます」をつけます。</div>
+        <button type="button" class="btn-next" id="btn-next">つぎへ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT VIEW -->
+  <div id="view-result" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+    <div class="header">
+      <div class="header-title" id="result-set-label">セット 1</div>
+      <div class="header-stats">おわり</div>
+    </div>
+    <div class="quiz-box" style="justify-content:center; gap:16px;">
+      <div class="result-emoji" id="result-emoji">💮</div>
+      <div class="result-title" id="result-title">よく できました！</div>
+      <div class="result-score" id="result-score">8 / 8 せいかい</div>
+      <div class="result-actions">
+        <button type="button" class="btn-primary-large" id="btn-retry">もう 一かい やる</button>
+        <button type="button" class="btn-secondary-large" id="btn-home">セットを えらぶ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // 全漢字を小学校1年生配当漢字（80字）とひらがな・カタカナ・数字のみで構成
+  // 小1漢字: 一二三四五六七八九十百千上下左右中大小日月火水木金土年校生先休本名人口目耳手足力気円花天学糸林森車雨玉犬虫早音川山夕町空白赤青石王字正文竹草村見言出入立
+
+  const TARGETS = {
+    teacher:   { name: "せんせい",         avatar: "👩‍🏫", formal: true,  rule: "せんせいには「〜です」「〜ます」をつけます。" },
+    principal: { name: "こうちょうせんせい", avatar: "👨‍💼", formal: true,  rule: "こうちょうせんせいには「〜です」「〜ます」をつけます。" },
+    nurse:     { name: "ほけんの せんせい", avatar: "🩺",  formal: true,  rule: "ほけんの せんせいには「〜です」「〜ます」をつけます。" },
+    friend:    { name: "ともだち",         avatar: "🧒",  formal: false, rule: "ともだちには いつもの 言いかたで はなします。" },
+    firstGrader:{ name: "一年生",          avatar: "🎒",  formal: false, rule: "一年生には やさしい 言いかたで はなします。" },
+    parent:    { name: "お父さん・お母さん", avatar: "🏠",  formal: false, rule: "かぞくには いつもの 言いかたで はなします。" },
+    shop:      { name: "おみせの 人",      avatar: "🏪",  formal: true,  rule: "おみせの 人には「〜です」「〜ます」をつけます。" },
+    neighbor:  { name: "まちの 人",        avatar: "🏘️",  formal: true,  rule: "まちの 人には「〜です」「〜ます」をつけます。" }
+  };
+
+  // 160個の重複しない具体的な状況データ（targetキー, 状況, 丁寧表現, カジュアル表現）
+  const RAW_ITEMS = [
+    // Set 1
+    ["teacher",   "しゅくだいを だすとき",             "しゅくだいを だします。",           "しゅくだいを だすよ。"],
+    ["friend",    "けしゴムを かりたいとき",           "けしゴムを かして。",               "けしゴムを おかし ください。"],
+    ["neighbor",  "あさ、あいさつを するとき",         "おはようございます。",              "おはよう！"],
+    ["parent",    "ごはんを たべていいか きくとき",     "もう たべて いい？",                "もう たべても よろしいですか。"],
+    ["shop",      "おみせで これを かいたいとき",       "これを ください。",                 "これを ちょうだい。"],
+    ["teacher",   "トイレに いきたいとき",             "トイレに いっても いいですか。",    "トイレに いってくるね。"],
+    ["firstGrader","なきそうな 一年生に こえをかけるとき","どうしたの？ だいじょうぶ？",       "いかが いたしましたか。"],
+    ["principal", "ろうかで すれちがったとき",         "こんにちは。",                      "やあ、こんにちは！"],
+
+    // Set 2
+    ["teacher",   "わからない ところを きくとき",       "ここを おしえて ください。",        "ここを おしえて。"],
+    ["friend",    "いっしょに あそぼうと さそうとき",   "いっしょに あそぼう。",             "いっしょに あそびましょうか。"],
+    ["parent",    "がっこうへ 出かけるとき",           "いってきます。",                    "いってまいります。"],
+    ["shop",      "ふくろが いらないと つたえるとき",   "ふくろは いりません。",             "ふくろは いらないよ。"],
+    ["nurse",     "おなかが いたいと つたえるとき",     "おなかが いたいです。",             "おなかが いたいんだ。"],
+    ["friend",    "ほんを かえすとき",                 "ほんを かえすね。ありがとう。",     "ほんを おかえし いたします。"],
+    ["neighbor",  "ゆうがた、あいさつを するとき",     "こんにちは。",                      "バイバイ！"],
+    ["teacher",   "わすれものを したと つたえるとき",   "きょうかしょを わすれました。",     "きょうかしょを わすれたよ。"],
+
+    // Set 3
+    ["friend",    "おかしを わけて あげるとき",         "これ、たべる？",                    "こちらを めしあがりますか。"],
+    ["teacher",   "しつもんが あるとき",               "しつもんが あります。",             "しつもんが あるんだけど。"],
+    ["parent",    "いえに かえったとき",               "ただいま！",                        "ただいま もどりました。"],
+    ["shop",      "トイレの ばしょを きくとき",         "トイレは どこですか。",             "トイレは どこ？"],
+    ["firstGrader","くつの ひもを むすんであげるとき",  "むすんで あげるね。",               "おむすび いたしましょうか。"],
+    ["principal", "こうちょうしつに はいるとき",       "しつれいします。",                  "はいるよ！"],
+    ["friend",    "あしたの もちものを きくとき",       "あした、なにを もっていく？",       "あしたは なにを おもちになりますか。"],
+    ["nurse",     "ゆびを きって しまったとき",         "ゆびを きりました。",               "ゆびを きっちゃった。"],
+
+    // Set 4
+    ["teacher",   "こくばんの 字が みえないとき",       "こくばんが みえません。",           "こくばんが みえないよ。"],
+    ["parent",    "おふろに はいると つたえるとき",     "おふろに はいるね。",               "おふろに はいらせて いただきます。"],
+    ["neighbor",  "落とした ハンカチを ひろったとき",   "ハンカチを 落としましたよ。",       "ハンカチを 落としたよ。"],
+    ["friend",    "ボールを とって ほしいとき",         "ボールを とって！",                 "ボールを おとり ください。"],
+    ["shop",      "おつりを もらったとき",             "ありがとうございます。",            "ありがとう！"],
+    ["teacher",   "おたよりを わたすとき",             "おたよりを わたします。",           "おたよりを わたすね。"],
+    ["firstGrader","にもつを もって あげるとき",        "にもつを もつよ。",                 "おにもつを おもち します。"],
+    ["nurse",     "ねつを はかりたいとき",             "ねつを はかって ください。",        "ねつを はかって。"],
+
+    // Set 5
+    ["friend",    "ゲームを いっしょに するとき",       "いっしょに やろうよ。",             "ごいっしょに やりましょう。"],
+    ["teacher",   "きゅうしょくを おかわり したいとき", "おかわりを ください。",             "おかわり ちょうだい。"],
+    ["parent",    "てつだって ほしいとき",             "ちょっと てつだって。",             "すこし おてつだい ください。"],
+    ["principal", "あさ、こうもんで あったとき",       "おはようございます。",              "おはよう。"],
+    ["shop",      "おなじ ものが ほしいとき",           "これを もう 一つ ください。",      "これを もう 一つ くれない？"],
+    ["friend",    "あやまりたいとき",                 "ごめんね。",                        "もうしわけ ございません。"],
+    ["neighbor",  "みちを ゆずって もらったとき",       "ありがとうございます。",            "どうも ありがとう。"],
+    ["teacher",   "かえりの あいさつを するとき",       "さようなら。",                      "じゃあね！"],
+
+    // Set 6
+    ["parent",    "ねる まえの あいさつを するとき",     "おやすみ。",                        "おやすみなさいませ。"],
+    ["teacher",   "えんぴつを けずりたいとき",         "えんぴつを けずっても いいですか。", "えんぴつを けずるね。"],
+    ["friend",    "かくれんぼで おにを きめるとき",     "だれが おにを する？",              "どなたが おにを なさいますか。"],
+    ["shop",      "おねだんを きくとき",               "これは いくらですか。",             "これは いくら？"],
+    ["nurse",     "あたまが いたいと つたえるとき",     "あたまが いたいです。",             "あたまが いたいよ。"],
+    ["firstGrader","あそびかたを おしえるとき",         "こうやって やるんだよ。",           "このように なさってください。"],
+    ["teacher",   "まどを しめて いいか きくとき",       "まどを しめても いいですか。",      "まどを しめて いい？"],
+    ["friend",    "ジュースを のむか きくとき",         "ジュース のむ？",                   "ジュースを おのみに なりますか。"],
+
+    // Set 7
+    ["teacher",   "なまえを よばれたとき",             "はい。",                            "うん。"],
+    ["neighbor",  "いぬの さんぽに あったとき",         "かわいい いぬですね。",             "かわいい いぬだね。"],
+    ["friend",    "ノートを みせて ほしいとき",         "ノートを みせて。",                 "ノートを おみせ ください。"],
+    ["parent",    "おやつを たべたいとき",             "おやつ たべて いい？",              "おやつを いただいても よろしいですか。"],
+    ["principal", "ひょうしょうじょうを もらうとき",   "ありがとうございます。",            "ありがとう。"],
+    ["shop",      "カードを つかいたいとき",           "この カードを つかえますか。",      "この カードを つかえる？"],
+    ["firstGrader","トイレの ばしょを おしえるとき",    "トイレは あっちだよ。",             "トイレは あちらでございます。"],
+    ["teacher",   "のどが かわいて 水を のみたいとき",  "水を のんでも いいですか。",        "水を のんでくるよ。"],
+
+    // Set 8
+    ["friend",    "あした あそべるか きくとき",         "あした あそべる？",                 "あしたは ごつごう よろしいですか。"],
+    ["teacher",   "プリントを くばり おわったとき",     "くばり おわりました。",             "くばり おわったよ。"],
+    ["parent",    "くつを かいたいと おねがいするとき", "あたらしい くつが ほしいな。",      "あたらしい くつを おかい ください。"],
+    ["nurse",     "すりむいた ところを みせるとき",     "ここを すりむきました。",           "ここを すりむいたんだ。"],
+    ["shop",      "おべんとうを あたためて ほしいとき", "あたためて ください。",             "あたためて。"],
+    ["neighbor",  "おおきな にもつを もつ 人に",       "おもそうですね。だいじょうぶですか。","おもそうだね。だいじょうぶ？"],
+    ["friend",    "つくえを はこぶのを てつだうとき",   "いっしょに はこぼう。",             "いっしょに おはこび しましょう。"],
+    ["teacher",   "ちこくを したとき",                 "おくれて すみません。",             "おくれて ごめん。"],
+
+    // Set 9
+    ["teacher",   "ほんを かりたいとき",               "この ほんを かりても いいですか。", "この ほんを かりるね。"],
+    ["friend",    "じてんしゃで いこうと さそうとき",   "じてんしゃで いこう。",             "じてんしゃで まいりましょう。"],
+    ["parent",    "テレビを みて いいか きくとき",       "テレビ みて いい？",                "テレビを はいけん しても いいですか。"],
+    ["shop",      "レシートが ほしいとき",             "レシートを ください。",             "レシート ちょうだい。"],
+    ["principal", "しつもんに こたえるとき",           "はい、そうです。",                  "うん、そうだよ。"],
+    ["firstGrader","せの じゅんに ならぶとき",          "まえに ならんでね。",               "まえに おならび ください。"],
+    ["teacher",   "そうじが おわったと つたえるとき",   "そうじが おわりました。",           "そうじが おわったよ。"],
+    ["friend",    "でんわを きるとき",                 "じゃあ、またね。",                  "それでは しつれい いたします。"],
+
+    // Set 10
+    ["neighbor",  "あめの 日に かさを さして あったとき","こんにちは。すごい 雨ですね。",     "こんにちは。すごい 雨だね。"],
+    ["friend",    "おもしろい ほんを すすめるとき",     "この ほん、おもしろいよ。",         "この ほんは おもしろいですよ。"],
+    ["teacher",   "グループに いれて ほしいとき",       "いれて ください。",                 "いれて！"],
+    ["parent",    "みずとうを あらって ほしいとき",     "みずとう、あらって。",              "みずとうを おあらい ください。"],
+    ["shop",      "おみせの 人を よぶとき",             "すみません。",                      "ねえ、ちょっと！"],
+    ["nurse",     "めが かゆいと つたえるとき",         "めが かゆいです。",                 "めが かゆいよ。"],
+    ["friend",    "えんぴつを １ぽん かすとき",         "これ、つかって いいよ。",           "こちらを おつかい ください。"],
+    ["teacher",   "はっぴょうを はじめるとき",         "これから はっぴょうを はじめます。", "これから はっぴょうを はじめるよ。"],
+
+    // Set 11
+    ["parent",    "おいしい ごはんを たべたとき",       "おいしかった！ ごちそうさま。",     "たいへん おいしゅう ございました。"],
+    ["teacher",   "つくえの 中を かたづけたとき",       "かたづけが おわりました。",         "かたづけが おわったよ。"],
+    ["friend",    "おにごっこで つかまったとき",       "つかまっちゃった！",                "つかまって しまいました。"],
+    ["shop",      "あまい パンが どこにあるか きくとき","あまい パンは どこですか。",        "あまい パンは どこ？"],
+    ["neighbor",  "ボールが にわに 入ったとき",         "ボールを とらせて ください。",      "ボールを とらせて。"],
+    ["firstGrader","てを つないで あるくとき",          "ゆっくり あるこうね。",             "ゆっくり おあるき ください。"],
+    ["teacher",   "せきを かわって ほしいとき",         "せきを かわっても いいですか。",    "せきを かわって いい？"],
+    ["friend",    "しゃしんを 一しょに とるとき",       "いっしょに とろうよ。",             "ごいっしょに おとり しましょう。"],
+
+    // Set 12
+    ["teacher",   "のりを かりたいとき",               "のりを かして ください。",          "のりを かして。"],
+    ["friend",    "すべりだいの じゅんばんを ゆずるとき","さきに どうぞ！",                   "おさきに どうぞ やりなさい。"],
+    ["parent",    "あした はやく おこして ほしいとき",  "あした、はやく おこしてね。",       "あした、はやく おおこし ください。"],
+    ["principal", "こうていで あいさつを するとき",     "おはようございます。",              "おはよう！"],
+    ["shop",      "プレゼント用に つつんで ほしいとき", "プレゼント用に つつんで ください。", "プレゼント用に つつんで。"],
+    ["nurse",     "くすりを のみたいとき",             "くすりを のんでも いいですか。",    "くすりを のんで いい？"],
+    ["friend",    "おなじ チームに なったとき",         "よろしくね！",                      "よろしく おねがい いたします。"],
+    ["neighbor",  "じてんしゃの まえを とおるとき",     "すみません、とおらせて ください。", "ごめん、とおして。"],
+
+    // Set 13
+    ["friend",    "あたらしい くつを ほめるとき",       "その くつ、かっこいいね！",         "その くつは かっこいいです。"],
+    ["teacher",   "ちずを みに いきたいとき",           "ちずを みに いっても いいですか。", "ちずを みに いくね。"],
+    ["parent",    "かいものに 一しょに いきたいとき",   "わたしも 一しょに いく！",          "わたくしも ごいっしょ します。"],
+    ["shop",      "アイスが とけないように したいとき", "つめたい ふくろを ください。",      "つめたい ふくろ ちょうだい。"],
+    ["firstGrader","うわばきを はきまちがえているとき", "うわばき、ぎゃくだよ。",            "うわばきが ぎゃくでございます。"],
+    ["teacher",   "てを あげて さされたとき",           "はい、わかりました。",              "うん、わかった。"],
+    ["friend",    "カードゲームで かったとき",         "やったー、かった！",                "やりました、かちました！"],
+    ["neighbor",  "まいごに なって みちを きくとき",    "えきは どちらですか。",             "えきは どっち？"],
+
+    // Set 14
+    ["teacher",   "おなかが いたくて やすみたいとき",   "すこし やすんでも いいですか。",    "すこし やすむね。"],
+    ["parent",    "おふろが わいたと しらせるとき",     "おふろ、わいたよ！",                "おふろが わきました。"],
+    ["friend",    "おべんとうを 一しょに たべるとき",   "いっしょに たべよう。",             "いっしょに めしあがりましょう。"],
+    ["shop",      "えんぴつの 芯の こさを きくとき",    "２Ｂの えんぴつは ありますか。",    "２Ｂの えんぴつ ある？"],
+    ["nurse",     "ベッドで ねても いいか きくとき",    "ベッドで ねても いいですか。",      "ベッドで ねて いい？"],
+    ["principal", "おきゃくさまを あんない するとき",   "こちらへ どうぞ。",                 "こっちへ きて。"],
+    ["friend",    "あめが ふってきて かさを かすとき",  "いっしょに 入ろうよ。",             "ごいっしょに お入り ください。"],
+    ["teacher",   "黒板を けしても いいか きくとき",    "こくばんを けしても いいですか。",  "こくばんを けして いい？"],
+
+    // Set 15
+    ["friend",    "あしたの テストの ことを はなすとき","べんきょう した？",                 "おべんきょうは なさいましたか。"],
+    ["teacher",   "じぶんの いけんを いうとき",         "わたしは こう おもいます。",        "わたしは こう おもうよ。"],
+    ["parent",    "くつしたを さがして いるとき",       "くつした、どこに ある？",           "くつしたは どこに ありますか。"],
+    ["neighbor",  "はなを ほめて もらったとき",         "ありがとうございます。",            "ありがとう！"],
+    ["shop",      "ケーキを ３つ かいたいとき",         "この ケーキを ３つ ください。",     "この ケーキ ３つ ちょうだい。"],
+    ["firstGrader","つくえに あたまを ぶつけた子に",     "だいじょうぶ？ いたかったね。",     "おだいじょうぶ ですか。"],
+    ["teacher",   "音楽室へ いどうして いいか きくとき","おんがくしつへ いっても いいですか。","おんがくしつへ いって いい？"],
+    ["friend",    "おかしを もらったとき",             "ありがとう、うれしい！",            "ありがとうございます、うれしいです。"],
+
+    // Set 16
+    ["teacher",   "体育の ふくを わすれたとき",         "たいいくぎを わすれました。",       "たいいくぎを わすれたよ。"],
+    ["friend",    "かけっこで どっちが はやいか きめるとき","きょうそう しよう！",             "きょうそうを いたしましょう。"],
+    ["parent",    "おさらを はこぶのを てつだうとき",   "おさら、はこぶよ。",                "おさらを おはこび いたします。"],
+    ["shop",      "おみせを 出るとき",                 "ありがとうございました。",          "バイバイ！"],
+    ["nurse",     "はなぢが 出たと つたえるとき",       "はなぢが 出ました。",               "はなぢが 出たよ。"],
+    ["principal", "しつもんが おわったとき",           "ありがとうございました。",          "ありがとうね。"],
+    ["friend",    "まんがを かして ほしいとき",         "その まんが、かして。",             "その まんがを おかし ください。"],
+    ["neighbor",  "ゴミだしを てつだって いるとき",     "おはようございます。",              "おはよう！"],
+
+    // Set 17
+    ["parent",    "ゲームを やめる じかんに なったとき","わかった、もう やめるね。",         "かしこまりました、やめます。"],
+    ["teacher",   "はさみを かりたいとき",             "はさみを かして ください。",        "はさみを かして。"],
+    ["friend",    "こうえんで まちあわせ するとき",     "こうえんで まっててね。",           "こうえんで おまち ください。"],
+    ["shop",      "みずが ほしいとき",                 "おみずを ください。",               "おみず ちょうだい。"],
+    ["firstGrader","なまえを きくとき",                 "おなまえは なに？",                 "おなまえを おしえて いただけますか。"],
+    ["teacher",   "うたを うたう じゅんびが できたとき","じゅんびが できました。",           "じゅんびが できたよ。"],
+    ["friend",    "あそびが たのしかったと いうとき",   "きょうは たのしかったね！",         "きょうは たのしかったです。"],
+    ["neighbor",  "じてんしゃを とめるとき",           "ここにとめても いいですか。",       "ここにとめて いい？"],
+
+    // Set 18
+    ["teacher",   "図書室で ほんを さがしているとき",   "この ほんは どこに ありますか。",   "この ほんは どこに ある？"],
+    ["friend",    "おなじ いろの ふくを きていたとき",  "おそろいだね！",                    "おそろいで ございますね。"],
+    ["parent",    "あめが ふってきたと しらせるとき",   "あめが ふってきたよ！",             "あめが ふって まいりました。"],
+    ["shop",      "ポイントカードを 出したいとき",     "ポイントカードを おねがいします。", "ポイントカード よろしく。"],
+    ["nurse",     "つめを きりたいとき",               "つめきりを かして ください。",      "つめきりを かして。"],
+    ["principal", "ろうかで おきゃくさんと あうとき",   "こんにちは。",                      "やあ！"],
+    ["friend",    "てつぼうの やりかたを きくとき",     "どうやって まわるの？",             "どのように おまわりになるのですか。"],
+    ["teacher",   "水やりが おわったと つたえるとき",   "花に 水を やりました。",            "花に 水を やったよ。"],
+
+    // Set 19
+    ["friend",    "すいとうの おちゃを こぼしたとき",   "ごめん、ふこう！",                  "もうしわけありません、ふきます。"],
+    ["teacher",   "クレヨンを 落として しまったとき",   "ひろっても いいですか。",           "ひろうね。"],
+    ["parent",    "おふろの おゆが あついとき",         "おゆが あついよ！",                 "おゆが あつうございます。"],
+    ["shop",      "ふくろに 入れて ほしいとき",         "ふくろに 入れて ください。",        "ふくろに 入れて。"],
+    ["neighbor",  "くるまが きたと おしえてもらったとき","ありがとうございます。",            "ありがとう！"],
+    ["firstGrader","くつばこが わからないとき",         "ここが きみの ばしょだよ。",        "こちらが あなたの ばしょです。"],
+    ["teacher",   "じかんわりに ついて きくとき",       "つぎは なんの じかんですか。",      "つぎは なんの じかん？"],
+    ["friend",    "あしたの あさ 一しょに いくとき",    "あした、むかえに いくね。",         "あした、おむかえに まいります。"],
+
+    // Set 20
+    ["teacher",   "一年間の おれいを いうとき",         "一年間、ありがとうございました。",  "一年間、ありがとう！"],
+    ["friend",    "はるやすみに あそぶ やくそくをするとき","はるやすみも あそぼうね！",        "はるやすみも あそびましょう。"],
+    ["parent",    "たんじょうびの プレゼントを もらったとき","ありがとう！ 大切に するね。",   "ありがとうございます、大切に します。"],
+    ["shop",      "おみせの 人に 道を きくとき",        "バスていは どこですか。",           "バスていは どこ？"],
+    ["nurse",     "一年間の おれいを いうとき",         "ありがとうございました。",          "ありがとうね。"],
+    ["principal", "そつぎょうしきの れんしゅうの とき", "はい、わかりました。",              "うん、わかったよ。"],
+    ["friend",    "しゃしんを みせあうとき",           "これ、みてみて！",                  "こちらを ごらん ください。"],
+    ["neighbor",  "いつも あいさつする 人に",           "こんにちは。いい 天気ですね。",     "こんにちは。いい 天気だね。"]
+  ];
+
+  // 20セット × 8問 = 160問を構築
+  const SETS = [];
+  for (let s = 0; s < 20; s++) {
+    const questions = [];
+    for (let q = 0; q < 8; q++) {
+      const idx = s * 8 + q;
+      const [targetKey, situation, optA, optB] = RAW_ITEMS[idx];
+      const target = TARGETS[targetKey];
+      // optA is always appropriate for the target in RAW_ITEMS
+      // Shuffle display order deterministically or randomly at runtime
+      questions.push({
+        targetKey,
+        targetName: target.name,
+        avatar: target.avatar,
+        situation,
+        goodText: optA,
+        badText: optB,
+        reason: target.rule
+      });
+    }
+    SETS.push(questions);
+  }
+
+  // 安全なストレージ管理（iPad Safariのプライベートブラウズやfile://でも動作）
+  const STORAGE_KEY = "kotoba_master_v1_scores";
+  let memoryScores = {};
+
+  function loadScores() {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        memoryScores = JSON.parse(raw) || {};
+      }
+    } catch (e) {
+      // localStorage blocked fallback
+    }
+    return memoryScores;
+  }
+
+  function saveScore(setIndex, score) {
+    const prev = memoryScores[setIndex];
+    if (prev === undefined || score > prev) {
+      memoryScores[setIndex] = score;
+    }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(memoryScores));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  // アプリ状態
+  let currentSetIndex = 0;
+  let currentQIndex = 0;
+  let currentScore = 0;
+  let currentChoices = [];
+  let answered = false;
+
+  // DOM要素
+  const viewHome = document.getElementById("view-home");
+  const viewQuiz = document.getElementById("view-quiz");
+  const viewResult = document.getElementById("view-result");
+
+  const setGrid = document.getElementById("set-grid");
+  const totalProgress = document.getElementById("total-progress");
+
+  const quizSetLabel = document.getElementById("quiz-set-label");
+  const quizQLabel = document.getElementById("quiz-q-label");
+  const stepConfirm = document.getElementById("step-confirm");
+  const stepQuestion = document.getElementById("step-question");
+
+  const confirmAvatar = document.getElementById("confirm-avatar");
+  const confirmName = document.getElementById("confirm-name");
+
+  const qAvatar = document.getElementById("q-avatar");
+  const qName = document.getElementById("q-name");
+  const qSituation = document.getElementById("q-situation");
+  const choiceBtns = [
+    document.getElementById("choice-0"),
+    document.getElementById("choice-1")
+  ];
+  const feedbackPanel = document.getElementById("feedback-panel");
+  const feedbackMark = document.getElementById("feedback-mark");
+  const feedbackReason = document.getElementById("feedback-reason");
+
+  function showView(view) {
+    viewHome.classList.add("hidden");
+    viewQuiz.classList.add("hidden");
+    viewResult.classList.add("hidden");
+    view.classList.remove("hidden");
+    window.scrollTo(0, 0);
+  }
+
+  function renderHome() {
+    const scores = loadScores();
+    setGrid.innerHTML = "";
+    let clearedCount = 0;
+
+    for (let i = 0; i < SETS.length; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "set-card";
+
+      const sc = scores[i];
+      let scoreText = "まだ";
+      if (sc !== undefined) {
+        clearedCount++;
+        scoreText = sc + " / 8 せいかい";
+        if (sc === 8) {
+          btn.classList.add("perfect");
+          scoreText = "💮 " + scoreText;
+        } else {
+          btn.classList.add("cleared");
+          scoreText = "🌸 " + scoreText;
+        }
+      }
+
+      btn.innerHTML = `
+        <div class="set-num">セット ${i + 1}</div>
+        <div class="set-score">${scoreText}</div>
+      `;
+      btn.addEventListener("click", () => startSet(i));
+      setGrid.appendChild(btn);
+    }
+
+    totalProgress.textContent = `クリア ${clearedCount} / 20`;
+    showView(viewHome);
+  }
+
+  function startSet(setIdx) {
+    currentSetIndex = setIdx;
+    currentQIndex = 0;
+    currentScore = 0;
+    showView(viewQuiz);
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    answered = false;
+    const q = SETS[currentSetIndex][currentQIndex];
+
+    quizSetLabel.textContent = `セット ${currentSetIndex + 1}`;
+    quizQLabel.textContent = `${currentQIndex + 1} / 8`;
+
+    // STEP 1: 相手確認
+    confirmAvatar.textContent = q.avatar;
+    confirmName.textContent = q.targetName;
+
+    stepConfirm.classList.remove("hidden");
+    stepQuestion.classList.add("hidden");
+    feedbackPanel.classList.add("hidden");
+
+    // STEP 2 用データの準備
+    qAvatar.textContent = q.avatar;
+    qName.textContent = q.targetName;
+    qSituation.textContent = `［${q.situation}］`;
+
+    // 2択の順番をランダム配置
+    if (Math.random() < 0.5) {
+      currentChoices = [
+        { text: q.goodText, isCorrect: true },
+        { text: q.badText, isCorrect: false }
+      ];
+    } else {
+      currentChoices = [
+        { text: q.badText, isCorrect: false },
+        { text: q.goodText, isCorrect: true }
+      ];
+    }
+
+    choiceBtns.forEach((btn, idx) => {
+      btn.textContent = currentChoices[idx].text;
+      btn.className = "choice-btn";
+      btn.disabled = false;
+    });
+  }
+
+  function handleAnswer(selectedIdx) {
+    if (answered) return;
+    answered = true;
+
+    const q = SETS[currentSetIndex][currentQIndex];
+    const picked = currentChoices[selectedIdx];
+
+    choiceBtns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (currentChoices[idx].isCorrect) {
+        btn.classList.add("correct-choice");
+      } else if (idx === selectedIdx) {
+        btn.classList.add("wrong-choice");
+      } else {
+        btn.classList.add("dimmed");
+      }
+    });
+
+    feedbackPanel.classList.remove("hidden", "ok", "ng");
+    if (picked.isCorrect) {
+      currentScore++;
+      feedbackPanel.classList.add("ok");
+      feedbackMark.textContent = "⭕ せいかい！";
+    } else {
+      feedbackPanel.classList.add("ng");
+      feedbackMark.textContent = "❌ おしい！";
+    }
+    feedbackReason.textContent = q.reason;
+  }
+
+  function showResult() {
+    saveScore(currentSetIndex, currentScore);
+
+    document.getElementById("result-set-label").textContent = `セット ${currentSetIndex + 1}`;
+    document.getElementById("result-score").textContent = `${currentScore} / 8 せいかい`;
+
+    const emojiEl = document.getElementById("result-emoji");
+    const titleEl = document.getElementById("result-title");
+    if (currentScore === 8) {
+      emojiEl.textContent = "💮";
+      titleEl.textContent = "ぜんもん せいかい！";
+    } else if (currentScore >= 6) {
+      emojiEl.textContent = "🌸";
+      titleEl.textContent = "よく できました！";
+    } else {
+      emojiEl.textContent = "👏";
+      titleEl.textContent = "がんばりました！";
+    }
+
+    showView(viewResult);
+  }
+
+  // イベント登録
+  document.getElementById("btn-confirm-ok").addEventListener("click", () => {
+    stepConfirm.classList.add("hidden");
+    stepQuestion.classList.remove("hidden");
+  });
+
+  choiceBtns[0].addEventListener("click", () => handleAnswer(0));
+  choiceBtns[1].addEventListener("click", () => handleAnswer(1));
+
+  document.getElementById("btn-next").addEventListener("click", () => {
+    if (currentQIndex < 7) {
+      currentQIndex++;
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  });
+
+  document.getElementById("btn-quit").addEventListener("click", () => {
+    renderHome();
+  });
+
+  document.getElementById("btn-retry").addEventListener("click", () => {
+    startSet(currentSetIndex);
+  });
+
+  document.getElementById("btn-home").addEventListener("click", () => {
+    renderHome();
+  });
+
+  // 初期表示
+  renderHome();
+})();
+</script>
+</body>
+</html>
